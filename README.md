@@ -86,7 +86,40 @@ Job completion email sent using `emailext`.
 Engineer Ahmed  
 Senior DevOps & Cloud Infra (AWS + Azure)
 
+🎛️ Example: Parameterized Jenkinsfile
 ---
+pipeline {
+  agent any
+
+  parameters {
+    string(name: 'OLD_DB_NAME', defaultValue: 'CurrentDB', description: 'Existing RDS instance to rename')
+    string(name: 'RDS_INSTANCE_ID', defaultValue: 'CurrentDB-old', description: 'RDS instance to snapshot')
+    string(name: 'newInstanceId', defaultValue: 'ClonedDB', description: 'New RDS instance ID to restore to')
+    string(name: 'RDS_INSTANCE_CLASS', defaultValue: 'db.m5.large', description: 'Instance type for new RDS DB')
+  }
+
+  environment {
+    AWS_REGION = 'eu-west-1'
+  }
+
+  stages {
+    // Same stages as before, using ${params.VARIABLE_NAME}
+    // For example: ${params.OLD_DB_NAME}, ${params.newInstanceId}
+  }
+
+  post {
+    always {
+      emailext (
+        subject: "Jenkins Job: ${currentBuild.fullDisplayName}",
+        body: """
+          Build result: ${currentBuild.currentResult}
+          Check logs at: ${env.BUILD_URL}
+        """,
+        to: 'yourEmail'
+      )
+    }
+  }
+}
 
 ## 🛡 License
 
